@@ -315,24 +315,12 @@ export function renderFrame(p: RenderParams): void {
     off.restore();
   }
 
-  // Mask to the UNION of all hole polygons in a single blurred fill. Filling
-  // each separately with destination-in would intersect (not union) them and
-  // erase everything, since the holes don't overlap.
-  const feather = Math.max(3, potW * FEATHER_FRAC);
-  off.globalCompositeOperation = "destination-in";
-  off.filter = `blur(${feather}px)`;
-  off.fillStyle = "#000";
-  off.beginPath();
-  for (const f of features) {
-    f.poly.forEach((p, i) => {
-      if (i === 0) off.moveTo(p.x, p.y);
-      else off.lineTo(p.x, p.y);
-    });
-    off.closePath();
-  }
-  off.fill();
-  off.filter = "none";
+  // Each feature was already clipped to its landmark contour above.
+  // The additional blurred destination-in mask was fragile on some browsers
+  // and could erase all facial features, leaving only the moving mascot.
+  // Keep the antialiased clip edges; restore feathering later if needed.
   off.globalCompositeOperation = "source-over";
+  off.filter = "none";
 
   ctx.drawImage(off.canvas, 0, 0);
 
