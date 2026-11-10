@@ -12,6 +12,8 @@
     filterEnabled,
     eyeScale,
     mouthScale,
+    eyeYOffset,
+    mouthYOffset,
     onError,
   }: {
     deviceId: string | null;
@@ -20,6 +22,8 @@
     filterEnabled: boolean;
     eyeScale: number;
     mouthScale: number;
+    eyeYOffset: number;
+    mouthYOffset: number;
     onError: (message: string) => void;
   } = $props();
 
@@ -101,6 +105,8 @@
         filterEnabled,
         eyeScale,
         mouthScale,
+        eyeYOffset,
+        mouthYOffset,
       });
     };
 
