@@ -36,7 +36,7 @@ const EYE_SIZE_FACTOR = 0.82;
 const MOUTH_SIZE_FACTOR = 0.72;
 // The new mascot includes a jacket and bow tie: lift the mouth into its face.
 // Fraction of the tracked potato region height; adjust after a live test.
-const MOUTH_LIFT_FRAC = 0.16;
+const MOUTH_LIFT_FRAC = 0.04;
 // Feather radius for hole edges, as a fraction of the potato width.
 const FEATHER_FRAC = 0.014;
 // Chroma key background — pure green keys cleanly in OBS.
