@@ -19,6 +19,9 @@
   let filterEnabled = $state(true);
   let eyeScale = $state(1.0);
   let mouthScale = $state(1.0);
+  // Relative offsets inside the potato, with positive values moving down.
+  let eyeYOffset = $state(0.05);
+  let mouthYOffset = $state(-0.06);
   let errorMsg = $state<string | null>(null);
 
   async function refreshDevices() {
@@ -124,6 +127,28 @@
       disabled={!filterEnabled}
     />
   </label>
+  <label>
+    <span>Position des yeux (↓ = plus bas) <em>{Math.round(eyeYOffset * 100)}%</em></span>
+    <input
+      type="range"
+      min="-0.15"
+      max="0.15"
+      step="0.01"
+      bind:value={eyeYOffset}
+      disabled={!filterEnabled}
+    />
+  </label>
+  <label>
+    <span>Position de la bouche (↓ = plus bas) <em>{Math.round(mouthYOffset * 100)}%</em></span>
+    <input
+      type="range"
+      min="-0.15"
+      max="0.15"
+      step="0.01"
+      bind:value={mouthYOffset}
+      disabled={!filterEnabled}
+    />
+  </label>
 </div>
 
 <div class="stage-wrap">
@@ -134,6 +159,8 @@
     {filterEnabled}
     {eyeScale}
     {mouthScale}
+    {eyeYOffset}
+    {mouthYOffset}
     onError={(m) => (errorMsg = m)}
   />
 
