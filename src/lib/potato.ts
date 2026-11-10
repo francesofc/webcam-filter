@@ -20,23 +20,22 @@ const POTATO_SCALE = 2.0;
 // Holes expanded slightly past the exact contour so the whole feature shows.
 const HOLE_EXPAND = 1.08;
 // Extra outward spacing for the eyes (fraction of half the eye spacing).
-const EYE_SEPARATION = 0.22;
+const EYE_SEPARATION = 0.17;
 // Wide-eye effect: eye-aspect-ratio (lid gap / eye width) at a relaxed open
 // eye vs. wide open, and the max extra scale applied to a fully wide eye.
 const EAR_NORMAL = 0.27;
 const EAR_WIDE = 0.42;
-const EYE_WIDE_MAX_BOOST = 1.25;
+const EYE_WIDE_MAX_BOOST = 1.18;
 // Open-mouth effect: mouth-aspect-ratio (lip gap / mouth width) when closed
 // vs. wide open, and the max extra scale applied to a fully open mouth.
 const MAR_NORMAL = 0.05;
 const MAR_WIDE = 0.5;
-const MOUTH_WIDE_MAX_BOOST = 1.25;
+const MOUTH_WIDE_MAX_BOOST = 1.10;
 // Scale feature cutouts relative to the original filter for this compact mascot.
-const EYE_SIZE_FACTOR = 0.82;
-const MOUTH_SIZE_FACTOR = 0.72;
-// The new mascot includes a jacket and bow tie: lift the mouth into its face.
-// Fraction of the tracked potato region height; adjust after a live test.
-const MOUTH_LIFT_FRAC = 0.04;
+const EYE_SIZE_FACTOR = 0.90;
+const MOUTH_SIZE_FACTOR = 0.66;
+// Position sliders in the UI control the eyes and mouth independently.
+// Positive vertical offsets move features down; negative offsets move them up.
 // Feather radius for hole edges, as a fraction of the potato width.
 const FEATHER_FRAC = 0.014;
 // Chroma key background — pure green keys cleanly in OBS.
@@ -56,6 +55,8 @@ export interface RenderParams {
   eyeScale: number;
   /** Zoom of the mouth hole + its webcam image (1 = life-size). */
   mouthScale: number;
+  eyeYOffset: number;
+  mouthYOffset: number;
 }
 
 interface Pt {
@@ -269,20 +270,19 @@ export function renderFrame(p: RenderParams): void {
     x: (rightEye.center.x + leftEye.center.x) / 2,
     y: (rightEye.center.y + leftEye.center.y) / 2,
   };
-  applyOffset(rightEye, {
-    x: (rightEye.center.x - eyeMid.x) * EYE_SEPARATION,
-    y: (rightEye.center.y - eyeMid.y) * EYE_SEPARATION,
-  });
-  applyOffset(leftEye, {
-    x: (leftEye.center.x - eyeMid.x) * EYE_SEPARATION,
-    y: (leftEye.center.y - eyeMid.y) * EYE_SEPARATION,
-  });
-
-  // Reposition the live mouth above the suit/bow tie while following head roll.
-  const mouthLift = potH * MOUTH_LIFT_FRAC;
+  // Place features in the mascot's local axes, rotating offsets with the head.
+  // With positive Y, features move down; negative Y moves them toward the cap.
+  const eyeDrop = potH * p.eyeYOffset;
+  for (const eye of [rightEye, leftEye]) {
+    applyOffset(eye, {
+      x: (eye.center.x - eyeMid.x) * EYE_SEPARATION - Math.sin(roll) * eyeDrop,
+      y: (eye.center.y - eyeMid.y) * EYE_SEPARATION + Math.cos(roll) * eyeDrop,
+    });
+  }
+  const mouthShift = potH * p.mouthYOffset;
   applyOffset(mouth, {
-    x: Math.sin(roll) * mouthLift,
-    y: -Math.cos(roll) * mouthLift,
+    x: -Math.sin(roll) * mouthShift,
+    y: Math.cos(roll) * mouthShift,
   });
 
   const features = [rightEye, leftEye, mouth].filter((f) => f.poly.length >= 3);
