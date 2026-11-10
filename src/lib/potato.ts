@@ -18,19 +18,25 @@ import {
 // How much bigger than the detected face the potato is drawn.
 const POTATO_SCALE = 2.0;
 // Holes expanded slightly past the exact contour so the whole feature shows.
-const HOLE_EXPAND = 1.15;
+const HOLE_EXPAND = 1.08;
 // Extra outward spacing for the eyes (fraction of half the eye spacing).
-const EYE_SEPARATION = 0.35;
+const EYE_SEPARATION = 0.22;
 // Wide-eye effect: eye-aspect-ratio (lid gap / eye width) at a relaxed open
 // eye vs. wide open, and the max extra scale applied to a fully wide eye.
 const EAR_NORMAL = 0.27;
 const EAR_WIDE = 0.42;
-const EYE_WIDE_MAX_BOOST = 1.9;
+const EYE_WIDE_MAX_BOOST = 1.25;
 // Open-mouth effect: mouth-aspect-ratio (lip gap / mouth width) when closed
 // vs. wide open, and the max extra scale applied to a fully open mouth.
 const MAR_NORMAL = 0.05;
 const MAR_WIDE = 0.5;
-const MOUTH_WIDE_MAX_BOOST = 1.7;
+const MOUTH_WIDE_MAX_BOOST = 1.25;
+// Scale feature cutouts relative to the original filter for this compact mascot.
+const EYE_SIZE_FACTOR = 0.82;
+const MOUTH_SIZE_FACTOR = 0.72;
+// The new mascot includes a jacket and bow tie: lift the mouth into its face.
+// Fraction of the tracked potato region height; adjust after a live test.
+const MOUTH_LIFT_FRAC = 0.16;
 // Feather radius for hole edges, as a fraction of the potato width.
 const FEATHER_FRAC = 0.014;
 // Chroma key background — pure green keys cleanly in OBS.
@@ -246,9 +252,9 @@ export function renderFrame(p: RenderParams): void {
     MAR_WIDE,
     MOUTH_WIDE_MAX_BOOST,
   );
-  const rightEye = featureBase(landmarks, RIGHT_EYE, t, videoW, videoH, p.eyeScale * rightBoost);
-  const leftEye = featureBase(landmarks, LEFT_EYE, t, videoW, videoH, p.eyeScale * leftBoost);
-  const mouth = featureBase(landmarks, MOUTH, t, videoW, videoH, p.mouthScale * mouthBoost);
+  const rightEye = featureBase(landmarks, RIGHT_EYE, t, videoW, videoH, p.eyeScale * EYE_SIZE_FACTOR * rightBoost);
+  const leftEye = featureBase(landmarks, LEFT_EYE, t, videoW, videoH, p.eyeScale * EYE_SIZE_FACTOR * leftBoost);
+  const mouth = featureBase(landmarks, MOUTH, t, videoW, videoH, p.mouthScale * MOUTH_SIZE_FACTOR * mouthBoost);
 
   // Head roll: angle of the line from the right eye to the left eye.
   const roll = Math.atan2(
@@ -270,6 +276,13 @@ export function renderFrame(p: RenderParams): void {
   applyOffset(leftEye, {
     x: (leftEye.center.x - eyeMid.x) * EYE_SEPARATION,
     y: (leftEye.center.y - eyeMid.y) * EYE_SEPARATION,
+  });
+
+  // Reposition the live mouth above the suit/bow tie while following head roll.
+  const mouthLift = potH * MOUTH_LIFT_FRAC;
+  applyOffset(mouth, {
+    x: Math.sin(roll) * mouthLift,
+    y: -Math.cos(roll) * mouthLift,
   });
 
   const features = [rightEye, leftEye, mouth].filter((f) => f.poly.length >= 3);
@@ -373,6 +386,9 @@ function drawPotato(
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(angle);
+    // The outer scene is selfie-mirrored; cancel that flip for the mascot PNG
+    // so lettering on its cap/jacket remains readable, while the face stays mirrored.
+    ctx.scale(-1, 1);
     ctx.drawImage(image, -w / 2, -h / 2, w, h);
     ctx.restore();
     return;
