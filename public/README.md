@@ -29,12 +29,12 @@ paths (all artwork has to be uploaded before the matching URL works):
 
 | URL parameter | File |
 | --- | --- |
-| `?character=jems` | `public/potatoes/jems.png` |
-| `?character=hicham` | `public/potatoes/hicham.png` |
-| `?character=hugo` | `public/potatoes/hugo.png` |
-| `?character=faster` | `public/potatoes/faster.png` |
-| `?character=sobedo` | `public/potatoes/sobedo.png` |
-| `?character=monsieur-patate` | `public/potatoes/monsieur-patate.png` |
+| `?character=jems` | `public/jems.png` |
+| `?character=hicham` | `public/hicham.png` |
+| `?character=hugo` | `public/hugo.png` |
+| `?character=faster` | `public/faster.png` |
+| `?character=sobedo` | `public/sobedo.png` |
+| `?character=monsieur-patate` | `public/monsieur-patate.png` |
 
 Example: `https://joxtacy.github.io/webcam-filter/?character=hicham`
 
