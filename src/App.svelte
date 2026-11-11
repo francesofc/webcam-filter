@@ -9,6 +9,7 @@
   } from "./lib/camera";
   import { createLandmarker } from "./lib/faceLandmarker";
   import { loadPotato } from "./lib/potato";
+  import { CHARACTERS, getCharacterFromQuery, type CharacterSlug } from "./lib/characters";
   import type { FaceLandmarker } from "@mediapipe/tasks-vision";
 
   let landmarker = $state<FaceLandmarker | null>(null);
@@ -16,6 +17,7 @@
   let devices = $state<VideoDevice[]>([]);
   let selectedId = $state<string | null>(null);
   let potatoImage = $state<HTMLImageElement | null>(null);
+  let character = $state<CharacterSlug>("misterfrances");
   let filterEnabled = $state(true);
   let eyeScale = $state(1.0);
   let mouthScale = $state(1.0);
@@ -40,8 +42,15 @@
     let disposed = false;
 
     (async () => {
-      loadPotato().then((img) => {
-        if (!disposed) potatoImage = img;
+      character = getCharacterFromQuery(new URLSearchParams(window.location.search).get("character"));
+      const imageFile = CHARACTERS[character].file;
+      loadPotato(imageFile).then((img) => {
+        if (!disposed) {
+          potatoImage = img;
+          if (!img && character !== "misterfrances") {
+            errorMsg = `Image introuvable : public/${imageFile}. Ajoutez ce PNG au dépôt pour activer ce personnage.`;
+          }
+        }
       });
 
       try {
@@ -84,6 +93,7 @@
 </script>
 
 <h1><span class="spud">🥔</span> Potato Face</h1>
+<p class="subtitle">Personnage : {CHARACTERS[character].name}</p>
 <p class="subtitle">
   A serverless webcam filter. Your eyes and mouth, on a potato — all in your
   browser.

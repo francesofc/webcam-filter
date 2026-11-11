@@ -64,14 +64,14 @@ interface Pt {
   y: number;
 }
 
-/** Try to load an optional user-supplied potato image from potato.png.
- * Resolved against the app's base URL so it works under a subpath (Pages). */
-export function loadPotato(): Promise<HTMLImageElement | null> {
+/** Load the character selected by the URL, relative to the Vite base path.
+ * A missing image returns null so the existing procedural fallback still works. */
+export function loadPotato(file = "potato.png"): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
-    img.src = `${import.meta.env.BASE_URL}potato.png`;
+    img.src = `${import.meta.env.BASE_URL}${file}`;
   });
 }
 
